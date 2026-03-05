@@ -31,6 +31,8 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
+.env.*
 .env*.local
 
 # typescript
@@ -41,3 +43,33 @@ app-example
 # generated native folders
 /ios
 /android
+
+# Xcode
+*.xcuserdata
+*.xcscmblueprint
+*.xccheckout
+
+# CocoaPods
+ios/Pods/
+ios/build/
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# Package lock (optional, remove if you want to commit it)
+# package-lock.json
+
+# Watchman
+.watchmanconfig
+
+# Buck
+.buckconfig
+buck-out/
+
+# Temporary files
+*.swp
+*.swo
+*~

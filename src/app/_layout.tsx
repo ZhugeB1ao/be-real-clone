@@ -1,16 +1,40 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import React from 'react';
-import { useColorScheme } from 'react-native';
+import { Stack, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+export default function RootLayout() {
+  const router = useRouter();
+  let isLoggedIn = false;
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  useEffect(() => {
+    if (isLoggedIn)  router.replace("/(tabs)");
+    else router.replace("/(auth)/login");   
+  });
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
-  );
+  <Stack 
+    screenOptions={{
+      headerStyle: {
+        backgroundColor: "cornflowerblue",
+      },
+      headerTintColor: "white",
+      animation: "slide_from_right",
+      headerShown: false,
+    }}
+  >
+    <Stack.Screen 
+      name="(tabs)"
+      options={{
+        title: "Home",
+      }}
+    />
+    <Stack.Screen 
+      name="(auth)"
+      options={{
+        title: "Login",
+      }}
+    />
+
+    
+  </Stack>
+  )
 }

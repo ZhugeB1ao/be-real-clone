@@ -1,0 +1,128 @@
+import { Text, View, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+
+export default function LoginScreen() {
+    const router = useRouter();
+
+    return (
+        <SafeAreaView edges={["top", "bottom"]} style={styles.container}>
+            <View style={styles.content}>
+                <Text style={styles.title}>Welcome Back</Text>
+                <Text style={styles.subTitle}>Sign In to Continue</Text>
+                <View style={styles.form}>
+                    <TextInput 
+                        placeholder="Email..."
+                        placeholderTextColor={"#999"}
+                        keyboardType="email-address"
+                        autoComplete="email"
+                        autoCapitalize="none"
+                        style={styles.input}
+                    />
+
+                    <TextInput 
+                        placeholder="Password..."
+                        placeholderTextColor={"#999"}
+                        autoComplete="password"
+                        secureTextEntry
+                        autoCapitalize="none"
+                        style={styles.input}
+                    />
+
+                    <TouchableOpacity style={styles.button}>
+                        <Text style={styles.buttonText}>Sign In</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.linkButton} onPress={() => router.push("/(auth)/register")}>
+                        <Text style={styles.linkText}>Don't have an account? 
+                            <Text style={styles.linkTextBold}> Sign Up</Text>
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </SafeAreaView>
+    ) 
+}   
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    paddingHorizontal: 20,
+  },
+
+  content: {
+    width: "100%",
+  },
+
+  title: {
+    fontSize: 26,
+    fontWeight: "600",
+    color: "#050505",
+    marginBottom: 6,
+  },
+
+  subTitle: {
+    fontSize: 15,
+    color: "#65676B",
+    marginBottom: 24,
+  },
+
+  form: {
+    width: "100%",
+    padding: 16,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+  },
+
+  input: {
+    width: "100%",
+    height: 48,
+    borderWidth: 1,
+    borderColor: "#CCD0D5",
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    fontSize: 16,
+    backgroundColor: "#FFFFFF",
+    marginBottom: 14,
+  },
+
+  button: {
+    height: 48,
+    backgroundColor: "#000",
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 4,
+  },
+
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+
+  linkButton: {
+    marginTop: 18,
+    alignItems: "center",
+  },
+
+  linkText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#65676B",
+  },
+
+  linkTextBold: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#000",
+  },
+});
