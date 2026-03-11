@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.anonymous.berealclone"
+      "bundleIdentifier": "com.anonymous.berealclone",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "We need access to your photo library so you can choose photos to upload.",
+        "NSCameraUsageDescription": "We need access to your camera so you can take photos."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -18,7 +22,14 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permission": [
+        "CAMERA",
+        "MEDIA_LIBRARY",
+        "CAMERA",
+        "MEDIA_LIBRARY"
+      ],
+      "package": "com.anonymous.berealclone"
     },
     "web": {
       "output": "static",

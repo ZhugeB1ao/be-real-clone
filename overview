@@ -1,0 +1,52 @@
+# BeReal Clone - Project Overview
+
+## Core Tech Stack
+- **Framework:** React Native / Expo (v55)
+- **Navigation:** Expo Router (Stack & Tabs)
+- **Backend:** Supabase (Auth & Data)
+- **State Management:** React Context (AuthContext)
+- **Styling:** React Native StyleSheet & Expo-UI Swift-UI components
+- **Environment:** Managed by Expo (EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY)
+
+## Application Flow
+
+### 1. Initialization & Navigation (Root)
+- **Entry Point:** `src/app/_layout.tsx`
+- **Root Logic:** 
+  - Wraps the application with `AuthProvider` to provide user session state globally.
+  - Controls initial redirection via a `useEffect` hook.
+  - Currently hardcoded `isLoggedIn = false` to default users to the login screen.
+  - Uses `Stack` navigation for switching between auth and main application flows.
+
+### 2. Authentication Flow (`src/app/(auth)`)
+- **Login Screen (`login.tsx`):**
+  - Collects email/password.
+  - Interacts with `AuthContext`'s `login` function.
+  - Includes navigation to the Register screen.
+- **Register Screen (`register.tsx`):**
+  - Collects user details (email/password).
+  - Uses Supabase Auth (`supabase.auth.signUp`) via `AuthContext`.
+- **Onboarding (`onboarding.tsx`):**
+  - Placeholder for initial setup flow (e.g., username/profile picture).
+- **Session Persistence:** Managed by `AuthContext` and Supabase with `AsyncStorage`.
+
+### 3. Main Application Flow (`src/app/(tabs)`)
+Once "authenticated" (manually toggled or signed in), the user is redirected to the `(tabs)` group:
+- **Home Feed (`index.tsx`):**
+  - The primary landing screen.
+  - Currently serves as a landing page with navigation links to "About" and "Profile".
+- **About (`about.tsx`):**
+  - Static information screen about the app.
+- **Profile (`profile.tsx`):**
+  - Displays user settings/profile data.
+  - Currently experimental, showcasing integration with iOS-specific native components via `@expo/ui`.
+
+### 4. Data Layer (`src/lib/supabase`)
+- **Supabase Client:** Configured with `AsyncStorage` for session persistence.
+- **Environment Variables:** Loaded from `.env` (managed by Expo).
+
+## Current Project Status
+- **Architecture:** Solid boilerplate with Expo Router and Supabase established.
+- **UI:** Mixed between standard React Native components and high-performance Expo-UI Swift-UI components.
+- **Authentication:** Core logic is in place but largely incomplete (login is a no-op, register is partially implemented).
+- **Navigation:** Basic tab and stack structure is fully functional.

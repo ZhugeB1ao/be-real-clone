@@ -1,47 +1,71 @@
-import { Text, View, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginScreen() {
-    const router = useRouter();
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const { login } = useAuth()
+ 
+  const handleSignUp = async () => {
+    if(!email || !password) 
+      Alert.alert("Error", "Please fill in all fields");
+    
+    if (password.length < 3)
+      Alert.alert("Error", "Password must be at least 3 characters")
 
-    return (
-        <SafeAreaView edges={["top", "bottom"]} style={styles.container}>
-            <View style={styles.content}>
-                <Text style={styles.title}>Welcome Back</Text>
-                <Text style={styles.subTitle}>Sign In to Continue</Text>
-                <View style={styles.form}>
-                    <TextInput 
-                        placeholder="Email..."
-                        placeholderTextColor={"#999"}
-                        keyboardType="email-address"
-                        autoComplete="email"
-                        autoCapitalize="none"
-                        style={styles.input}
-                    />
+    try {
+      await login(email, password)
+    } catch (error) {
+       
+    }
+  }
 
-                    <TextInput 
-                        placeholder="Password..."
-                        placeholderTextColor={"#999"}
-                        autoComplete="password"
-                        secureTextEntry
-                        autoCapitalize="none"
-                        style={styles.input}
-                    />
+  const router = useRouter();
 
-                    <TouchableOpacity style={styles.button}>
-                        <Text style={styles.buttonText}>Sign In</Text>
-                    </TouchableOpacity>
+  return (
+      <SafeAreaView edges={["top", "bottom"]} style={styles.container}>
+          <View style={styles.content}>
+              <Text style={styles.title}>Welcome Back</Text>
+              <Text style={styles.subTitle}>Sign In to Continue</Text>
+              <View style={styles.form}>
+                  <TextInput 
+                      placeholder="Email..."
+                      placeholderTextColor={"#999"}
+                      keyboardType="email-address"
+                      autoComplete="email"
+                      autoCapitalize="none"
+                      value={email}
+                      onChangeText={setEmail}
+                      style={styles.input}
+                  />
 
-                    <TouchableOpacity style={styles.linkButton} onPress={() => router.push("/(auth)/register")}>
-                        <Text style={styles.linkText}>Don't have an account? 
-                            <Text style={styles.linkTextBold}> Sign Up</Text>
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        </SafeAreaView>
-    ) 
+                  <TextInput 
+                      placeholder="Password..."
+                      placeholderTextColor={"#999"}
+                      autoComplete="password"
+                      secureTextEntry
+                      autoCapitalize="none"
+                      value={password}
+                      onChangeText={setPassword}
+                      style={styles.input}
+                  />
+
+                  <TouchableOpacity style={styles.button}>
+                      <Text style={styles.buttonText}>Sign In</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.linkButton} onPress={() => router.push("/(auth)/register")}>
+                      <Text style={styles.linkText}>Don't have an account? 
+                          <Text style={styles.linkTextBold}> Sign Up</Text>
+                      </Text>
+                  </TouchableOpacity>
+              </View>
+          </View>
+      </SafeAreaView>
+  ) 
 }   
 
 const styles = StyleSheet.create({

@@ -1,50 +1,82 @@
-import { Text, TextInput, TouchableOpacity, View, StyleSheet } from "react-native";
+import { Text, TextInput, TouchableOpacity, View, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Register() {
-    const router = useRouter();
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter();
 
-    return (
-        <SafeAreaView style={styles.container} >
-            <View style={styles.content}>
-                <Text style={styles.title}>Create Account</Text>
-                <Text style={styles.subTitle}>Sign Up to Get Started</Text>
-                <View style={styles.form}>
-                    <TextInput 
-                        placeholder="Full Name..."
-                        placeholderTextColor={"#999"}
-                        style={styles.input}
-                    />
-                    <TextInput 
-                        placeholder="Email..."
-                        placeholderTextColor={"#999"}
-                        keyboardType="email-address"
-                        autoComplete="email"
-                        autoCapitalize="none"
-                        style={styles.input}
-                    />
-                    <TextInput 
-                        placeholder="Password..."
-                        placeholderTextColor={"#999"}
-                        autoComplete="password"
-                        secureTextEntry
-                        autoCapitalize="none"
-                        style={styles.input}
-                    />
-                    <TouchableOpacity style={styles.button}>
+  const { register } = useAuth()
+
+  useEffect(() => {
+    router.push("/(auth)/onboarding")
+  }, [])
+  
+  const handleSignUp = async () => {
+    if(!email || !password) 
+      Alert.alert("Error", "Please fill in all fields")
+    
+    if (password.length < 3)
+      Alert.alert("Error", "Password must be at least 3 characters")
+
+    setIsLoading(true)
+
+    try {
+      await register(email, password)
+    } catch (error) {
+      Alert.alert("Error", "Failed to Sign up, Please try again")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+      <SafeAreaView edges={["top", "bottom"]} style={styles.container} >
+          <View style={styles.content}>
+              <Text style={styles.title}>Create Account</Text>
+              <Text style={styles.subTitle}>Sign Up to Get Started</Text>
+              <View style={styles.form}>
+                  <TextInput 
+                      placeholder="Email..."
+                      placeholderTextColor={"#999"}
+                      keyboardType="email-address"
+                      autoComplete="email"
+                      autoCapitalize="none"
+                      value={email}
+                      onChangeText={setEmail}
+                      style={styles.input}
+                  />
+                  <TextInput 
+                      placeholder="Password..."
+                      placeholderTextColor={"#999"}
+                      autoComplete="password"
+                      secureTextEntry
+                      autoCapitalize="none"
+                      value={password}
+                      onChangeText={setPassword}
+                      style={styles.input}
+                  />
+                  <TouchableOpacity style={styles.button} onPress={handleSignUp}>
+                      {isLoading ? (
+                        <ActivityIndicator size={24} color="#fff"/>
+                      ) : (
                         <Text style={styles.buttonText}>Sign Up</Text>
-                    </TouchableOpacity>
+                      )}
+                  </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.linkButton} onPress={() => router.push("/(auth)/login")}>
-                        <Text style={styles.linkText}>Already have an account? 
-                            <Text style={styles.linkTextBold}> Sign In</Text>
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        </SafeAreaView>
-    )
+                  <TouchableOpacity style={styles.linkButton} onPress={() => router.push("/(auth)/login")}>
+                      <Text style={styles.linkText}>Already have an account? 
+                          <Text style={styles.linkTextBold}> Sign In</Text>
+                      </Text>
+                  </TouchableOpacity>
+              </View>
+          </View>
+      </SafeAreaView>
+  )
 }
 
 const styles = StyleSheet.create({
