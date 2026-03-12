@@ -4,12 +4,17 @@ import { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
 import { supabase } from "@/lib/supabase/client";
+import { uploadProfileImage } from "@/lib/supabase/storage";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "expo-router";
 
 export default function OnBoarding() {
   const [fullName, setFullName] = useState("");
   const [userName, setUserName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const { user, updateUser } = useAuth();
+  const router = useRouter();
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -71,10 +76,18 @@ export default function OnBoarding() {
 
     setIsLoading(true)
     try {
+      if(!user) {
+        throw new Error("User not authenticated");
+      }
+
+      // Check if username is already taken
+      // We also need to make sure to exclude the current user's profile from this check, otherwise they won't be able to keep their existing username if they are just updating their profile without changing the username.
       const { data: existingUser } = await supabase
-        .from("profiles")
+        .from("profiles") 
         .select("id")
         .eq("username", userName)
+        .neq("id", user.id)
+        .single();
 
       if(existingUser) {
         Alert.alert("Error", "Username already taken, Please choose another one")
@@ -82,7 +95,27 @@ export default function OnBoarding() {
         return;
       }
 
-   
+      // Upload profile image 
+      let profileImageUrl: string | undefined;
+      if(profileImage) {     
+        try {
+          profileImageUrl = await uploadProfileImage(user.id, profileImage);
+        } catch (error) {
+          Alert.alert("Error", "Failed to upload profile image, Please try again")
+          setIsLoading(false)
+          return;
+        }
+      }
+
+      // Update user profile
+      await updateUser({
+        name: fullName,
+        userName: userName,
+        profileImage: profileImageUrl,
+        onboardingCompleted: true,
+      });
+ 
+      router.replace("/(tabs)")
 
     } catch (error) {
       Alert.alert("Error", "Failed to complete onboarding, Please try again")

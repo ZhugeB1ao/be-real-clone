@@ -11,25 +11,27 @@ export default function Register() {
   const router = useRouter();
 
   const { register } = useAuth()
-
-  useEffect(() => {
-    router.push("/(auth)/onboarding")
-  }, [])
   
   const handleSignUp = async () => {
-    if(!email || !password) 
+    if(!email || !password) {
       Alert.alert("Error", "Please fill in all fields")
+      return
+    }
     
-    if (password.length < 3)
-      Alert.alert("Error", "Password must be at least 3 characters")
+    if (password.length < 6) {
+      Alert.alert("Error", "Password must be at least 6 characters")
+      return
+    }
 
     setIsLoading(true)
 
     try {
       await register(email, password)
+      router.push("/(auth)/onboarding")
     } catch (error) {
       Alert.alert("Error", "Failed to Sign up, Please try again")
-    } finally {
+      console.error("Error signing up:", error);
+    } finally { 
       setIsLoading(false)
     }
   }

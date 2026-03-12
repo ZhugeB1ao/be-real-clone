@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, Alert } from "react-native";
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -7,23 +7,26 @@ import { useAuth } from "@/context/AuthContext";
 export default function LoginScreen() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
   const { login } = useAuth()
- 
-  const handleSignUp = async () => {
-    if(!email || !password) 
-      Alert.alert("Error", "Please fill in all fields");
-    
-    if (password.length < 3)
-      Alert.alert("Error", "Password must be at least 3 characters")
+  const router = useRouter();
 
+  const handleSignIn = async () => {
+    if(!email || !password) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
+    }
+      
     try {
+      setIsLoading(true);
       await login(email, password)
+      router.replace("/(tabs)")
     } catch (error) {
-       
+      Alert.alert("Error", "Invalid email or password");
+    } finally {
+      setIsLoading(false);
     }
   }
-
-  const router = useRouter();
 
   return (
       <SafeAreaView edges={["top", "bottom"]} style={styles.container}>
@@ -53,8 +56,12 @@ export default function LoginScreen() {
                       style={styles.input}
                   />
 
-                  <TouchableOpacity style={styles.button}>
-                      <Text style={styles.buttonText}>Sign In</Text>
+                  <TouchableOpacity style={styles.button} onPress={handleSignIn}>
+                      {isLoading ? (
+                        <ActivityIndicator size={24} color="#fff"/>
+                      ) : (
+                          <Text style={styles.buttonText}>Sign In</Text>
+                      )}
                   </TouchableOpacity>
 
                   <TouchableOpacity style={styles.linkButton} onPress={() => router.push("/(auth)/register")}>
