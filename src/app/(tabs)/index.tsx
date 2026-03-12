@@ -1,29 +1,17 @@
-import { Text, View, StyleSheet, TextInput, ActivityIndicator } from "react-native";
-import { Link, useRouter } from "expo-router";
-import { Button, Host } from "@expo/ui/swift-ui";
+import { StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context"
 
 export default function Index() {
   const router = useRouter();
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.redTitle}>Home Screen</Text>
+    <SafeAreaView 
+      style={styles.container}
+      edges={["top", "bottom"]}
+    >
       
-      <TextInput placeholder="Enter text here" />
-      <ActivityIndicator size={"large"}/>
-
-      <Link href="/about">
-        <Text>Go to About screen</Text>
-      </Link>
-      <Host>
-        <Button 
-          onPress={() => router.push("/profile")} 
-        >
-            <Text>Go to Profile</Text>
-        </Button>
-      </Host>
-      
-      </View> 
-
+    </SafeAreaView> 
   );
 }
 
