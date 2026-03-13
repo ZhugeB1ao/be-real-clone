@@ -9,6 +9,7 @@ export interface User {
     profileImage?: string;
     onboardingCompleted?: boolean;
 }
+
 interface AuthContextType {
     user: User | null;
     login: (email: string, password: string) => Promise<void>;

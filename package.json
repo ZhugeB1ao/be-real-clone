@@ -8,7 +8,8 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "seed": "tsx src/scripts/seed.ts"
   },
   "dependencies": {
     "@expo/ui": "0.2.0-beta.9",
@@ -18,6 +19,7 @@
     "@react-navigation/elements": "^2.8.1",
     "@react-navigation/native": "^7.1.28",
     "@supabase/supabase-js": "^2.98.0",
+    "dotenv": "^17.3.1",
     "expo": "~55.0.3",
     "expo-constants": "~55.0.7",
     "expo-dev-client": "~55.0.10",
@@ -42,7 +44,8 @@
     "react-native-safe-area-context": "~5.6.2",
     "react-native-screens": "~4.23.0",
     "react-native-web": "~0.21.0",
-    "react-native-worklets": "0.7.2"
+    "react-native-worklets": "0.7.2",
+    "tsx": "^4.21.0"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
