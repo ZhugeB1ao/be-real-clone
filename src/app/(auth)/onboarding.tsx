@@ -1,12 +1,20 @@
-import { Text, TextInput, TouchableOpacity, View, StyleSheet, Alert, ActivityIndicator } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useState } from "react";
-import * as ImagePicker from "expo-image-picker";
-import { Image } from "expo-image";
+import { useAuth } from "@/context/AuthContext";
+import useImageSelection from "@/hooks/useImageSelection";
 import { supabase } from "@/lib/supabase/client";
 import { uploadProfileImage } from "@/lib/supabase/storage";
-import { useAuth } from "@/context/AuthContext";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
+import { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function OnBoarding() {
   const [fullName, setFullName] = useState("");
@@ -16,93 +24,52 @@ export default function OnBoarding() {
   const { user, updateUser } = useAuth();
   const router = useRouter();
 
-  const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission Denied", "Please allow access to your media library to select a profile picture.");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      setProfileImage(result.assets[0].uri);
-    }
-  }
-
-  const takePhoto = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission Denied", "Please allow access to your camera to take a profile picture.");
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      setProfileImage(result.assets[0].uri);
-    }
-  }
-
-  const showImagePicker = () => {
-    Alert.alert(
-      "Select Profile Picture",
-      "Choose an option",
-      [
-        { text: "Take Photo", onPress: takePhoto },
-        { text: "Choose from Library", onPress: pickImage },
-        { text: "Cancel", style: "cancel" },
-      ],
-      { cancelable: true }
-    );
-  }
+  const { showImagePicker } = useImageSelection((imageUri: string) => {
+    setProfileImage(imageUri);
+  });
 
   const handleComplete = async () => {
-    if(!fullName || !userName) 
-      Alert.alert("Error", "Please fill in all fields")
-    
-    if (userName.length < 3)
-      Alert.alert("Error", "Username must be at least 3 characters")
+    if (!fullName || !userName)
+      Alert.alert("Error", "Please fill in all fields");
 
-    setIsLoading(true)
+    if (userName.length < 3)
+      Alert.alert("Error", "Username must be at least 3 characters");
+
+    setIsLoading(true);
     try {
-      if(!user) {
+      if (!user) {
         throw new Error("User not authenticated");
       }
 
       // Check if username is already taken
       // We also need to make sure to exclude the current user's profile from this check, otherwise they won't be able to keep their existing username if they are just updating their profile without changing the username.
       const { data: existingUser } = await supabase
-        .from("profiles") 
+        .from("profiles")
         .select("id")
         .eq("username", userName)
         .neq("id", user.id)
         .single();
 
-      if(existingUser) {
-        Alert.alert("Error", "Username already taken, Please choose another one")
-        setIsLoading(false)
+      if (existingUser) {
+        Alert.alert(
+          "Error",
+          "Username already taken, Please choose another one",
+        );
+        setIsLoading(false);
         return;
       }
 
-      // Upload profile image 
+      // Upload profile image
       let profileImageUrl: string | undefined;
-      if(profileImage) {     
+      if (profileImage) {
         try {
           profileImageUrl = await uploadProfileImage(user.id, profileImage);
         } catch (error) {
-          Alert.alert("Error", "Failed to upload profile image, Please try again")
-          setIsLoading(false)
+          Alert.alert(
+            "Error",
+            "Failed to upload profile image, Please try again",
+          );
+          setIsLoading(false);
           return;
         }
       }
@@ -114,66 +81,73 @@ export default function OnBoarding() {
         profileImage: profileImageUrl,
         onboardingCompleted: true,
       });
- 
-      router.replace("/(tabs)")
 
+      router.replace("/(tabs)");
     } catch (error) {
-      Alert.alert("Error", "Failed to complete onboarding, Please try again")
+      Alert.alert("Error", "Failed to complete onboarding, Please try again");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-
-  }
+  };
 
   return (
-      <SafeAreaView edges={["top", "bottom"]} style={styles.container} >
-          <View style={styles.content}>
-            <View style={styles.header}>
-              <Text style={styles.title}>Complete Your Profile</Text>
-              <Text style={styles.subTitle}>Add your information to get started</Text>
-            </View>
+    <SafeAreaView edges={["top", "bottom"]} style={styles.container}>
+      <View style={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Complete Your Profile</Text>
+          <Text style={styles.subTitle}>
+            Add your information to get started
+          </Text>
+        </View>
 
-            <View style={styles.form}>
-              <TouchableOpacity style={styles.imageContainer} onPress={showImagePicker}>
-                {profileImage ? (
-                  <Image style={styles.profileImage} source={{ uri: profileImage }} />) : (
-                    <View style={styles.placeholderImage}>
-                      <Text style={styles.placeholderText}>+</Text>
-                    </View>
-                  )
-                }
-      
-                <View style={styles.editBadge}>
-                  <Text style={styles.editText}>Edit</Text>
-                </View>
-              </TouchableOpacity>
+        <View style={styles.form}>
+          <TouchableOpacity
+            style={styles.imageContainer}
+            onPress={showImagePicker}
+          >
+            {profileImage ? (
+              <Image
+                style={styles.profileImage}
+                source={{ uri: profileImage }}
+                cachePolicy={"none"}
+              />
+            ) : (
+              <View style={styles.placeholderImage}>
+                <Text style={styles.placeholderText}>+</Text>
+              </View>
+            )}
 
-              <TextInput
-                placeholder="Full Name"
-                value={fullName}
-                onChangeText={setFullName}
-                style={styles.input}
-                autoCapitalize="words"
-              />
-              <TextInput
-                placeholder="Username"
-                value={userName}
-                onChangeText={setUserName}
-                style={styles.input}
-                autoCapitalize="none"
-                autoComplete="username"
-              />
-              <TouchableOpacity style={styles.button} onPress={handleComplete}>
-                  {isLoading ? (
-                    <ActivityIndicator size={24} color="#fff"/>
-                  ) : (
-                    <Text style={styles.buttonText}>Complete Setup</Text>
-                  )}
-              </TouchableOpacity>
+            <View style={styles.editBadge}>
+              <Text style={styles.editText}>Edit</Text>
             </View>
-          </View>
-      </SafeAreaView>
-  )
+          </TouchableOpacity>
+
+          <TextInput
+            placeholder="Full Name"
+            value={fullName}
+            onChangeText={setFullName}
+            style={styles.input}
+            autoCapitalize="words"
+          />
+          <TextInput
+            placeholder="Username"
+            value={userName}
+            onChangeText={setUserName}
+            style={styles.input}
+            autoCapitalize="none"
+            autoComplete="username"
+          />
+          <TouchableOpacity style={styles.button} onPress={handleComplete}>
+            {isLoading ? (
+              <ActivityIndicator size={24} color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Complete Setup</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -188,7 +162,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
 
-  header:{
+  header: {
     marginBottom: 32,
   },
 

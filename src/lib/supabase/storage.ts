@@ -29,8 +29,8 @@ export const uploadProfileImage = async (userId: string, imageUri: string) => {
 
         // Get the public URL of the uploaded image
         const { data } = await supabase.storage.from('profiles').getPublicUrl(fileName);
-        return data.publicUrl;
-
+        
+        return `${data.publicUrl}?${Date.now()}`; // Append timestamp to URL to prevent caching issues
     } catch (error) {
         console.error("Error uploading profile image:", error);
         throw error;

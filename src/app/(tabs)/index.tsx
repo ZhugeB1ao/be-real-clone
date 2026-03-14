@@ -1,12 +1,23 @@
-import { StyleSheet, Text, View, TouchableOpacity, Alert, Modal, TextInput, ActivityIndicator, FlatList, RefreshControl } from "react-native";
+import PostCard from "@/components/PostCard";
+import { useAuth } from "@/context/AuthContext";
+import useImageSelection from "@/hooks/useImageSelection";
+import { Post, usePosts } from "@/hooks/usePosts";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context"
-import * as ImagePicker from "expo-image-picker";
-import { Post, usePosts } from "@/hooks/usePosts";
-import { useAuth } from "@/context/AuthContext";
-import PostCard from "@/components/PostCard";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Modal,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Index() {
   const [showPreview, setShowPreview] = useState(false);
@@ -21,80 +32,30 @@ export default function Index() {
 
   // Check if user has an active post
   const userActivePost = posts?.find(
-    post => post.user_id === user?.id && 
-    post.is_active &&
-    new Date(post.expires_at) > new Date() 
+    (post) =>
+      post.user_id === user?.id &&
+      post.is_active &&
+      new Date(post.expires_at) > new Date(),
   );
 
   const hasActivePost = !!userActivePost;
+
+  const { showImagePicker } = useImageSelection((imageUri: string) => {
+    setPreviewImage(imageUri);
+    setShowPreview(true);
+    setDescription("");
+  });
+
   const onRefresh = async () => {
     setRefreshing(true);
-    try{
-      await refreshPosts();  
+    try {
+      await refreshPosts();
     } catch (error) {
       console.error("Error refreshing posts:", error);
     } finally {
       setRefreshing(false);
     }
-  }
-
-  // Request media library permissions and allow the user to pick an image, then show the preview modal
-  const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission Denied", "Please allow access to your media library to select a profile picture.");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      setPreviewImage(result.assets[0].uri);
-      setShowPreview(true);
-      setDescription("");
-    }
-  }
-  
-  // Request camera permissions and take a new photo, then show the preview modal
-  const takePhoto = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission Denied", "Please allow access to your camera to take a profile picture.");
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      setPreviewImage(result.assets[0].uri);
-      setShowPreview(true);
-      setDescription("");
-    }
-  }
-
-  // Show an action sheet to choose between taking a photo or picking from the library
-  const showImagePicker = () => {
-    Alert.alert(
-      "Select Profile Picture",
-      "Choose an option",
-      [
-        { text: "Take Photo", onPress: takePhoto },
-        { text: "Choose from Library", onPress: pickImage },
-        { text: "Cancel", style: "cancel" },
-      ],
-      { cancelable: true }
-    );
-  }
+  };
 
   // Handle posting the image with an optional description, then reset the preview state
   const handlePost = async () => {
@@ -112,39 +73,37 @@ export default function Index() {
       setDescription("");
     } catch (error) {
       console.error("Error posting:", error);
-      Alert.alert("Error", "An error occurred while posting. Please try again.");
+      Alert.alert(
+        "Error",
+        "An error occurred while posting. Please try again.",
+      );
     } finally {
       setIsUploading(false);
     }
-  }
+  };
 
   // Handle canceling the post creation and reset the preview state
   const handleCancel = () => {
     setShowPreview(false);
     setPreviewImage(null);
     setDescription("");
-  }
+  };
 
   // Render each post item using the PostCard component, passing the current user ID for context
   const renderPost = ({ item }: { item: Post }) => (
-    <PostCard post={item} currentUserId={user?.id}/>
-  )
+    <PostCard post={item} currentUserId={user?.id} />
+  );
 
   return (
-    <SafeAreaView 
-      style={styles.container}
-      edges={["top", "bottom"]}
-    >
-      <FlatList 
-        data={posts} 
-        renderItem={renderPost} 
+    <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+      <FlatList
+        data={posts}
+        renderItem={renderPost}
         keyExtractor={(item) => item.id}
         contentContainerStyle={
           posts?.length === 0 ? styles.emptyContent : styles.content
         }
-        ListEmptyComponent={
-          <Text>No Post found</Text>
-        }
+        ListEmptyComponent={<Text>No Post found</Text>}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -162,9 +121,14 @@ export default function Index() {
               {hasActivePost ? "Replace Your Post" : "Preview Your Post"}
             </Text>
             {previewImage && (
-              <Image source={{ uri: previewImage }} contentFit="cover" style={styles.modalImage} />
+              <Image
+                source={{ uri: previewImage }}
+                contentFit="cover"
+                style={styles.modalImage}
+                cachePolicy={"none"}
+              />
             )}
-            <TextInput 
+            <TextInput
               style={styles.modalDescription}
               placeholder="Enter a description..."
               value={description}
@@ -175,22 +139,30 @@ export default function Index() {
               textAlignVertical="top"
             />
             <View style={styles.modalButtons}>
-              <TouchableOpacity onPress={handleCancel} style={[styles.modalButton, styles.cancelButton]}>
+              <TouchableOpacity
+                onPress={handleCancel}
+                style={[styles.modalButton, styles.cancelButton]}
+              >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={handlePost} style={[styles.modalButton, styles.postButton]}>
+              <TouchableOpacity
+                onPress={handlePost}
+                style={[styles.modalButton, styles.postButton]}
+              >
                 {isUploading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={styles.postButtonText}>{hasActivePost ? "Replace Post" : "Post"}</Text>
+                  <Text style={styles.postButtonText}>
+                    {hasActivePost ? "Replace Post" : "Post"}
+                  </Text>
                 )}
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
-    </SafeAreaView> 
+    </SafeAreaView>
   );
 }
 

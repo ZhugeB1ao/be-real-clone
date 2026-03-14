@@ -21,6 +21,7 @@ export default function PostCard({ post, currentUserId }: PostcardProps) {
                         <Image
                             source={{ uri: postUser.profile_image_url }}
                             style={styles.avatar}
+                            cachePolicy={"none"}
                         />
                     ) : (
                         <View style={[styles.avatar, styles.avatarPlaceholder]} >
@@ -53,6 +54,7 @@ export default function PostCard({ post, currentUserId }: PostcardProps) {
                 source={{ uri: post.image_url }}
                 style={styles.postImage}
                 contentFit="cover"
+                cachePolicy={"none"}
             />
 
             <View style={styles.postFooter}>

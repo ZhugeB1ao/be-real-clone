@@ -47,8 +47,6 @@ export const usePosts = () => {
         .gt("expires_at", new Date().toISOString())
         .order("created_at", { ascending: false });
 
-      console.log("Fetched posts data:", data);
-
       if (error) {
         console.error("Error fetching posts:", error);
         return;

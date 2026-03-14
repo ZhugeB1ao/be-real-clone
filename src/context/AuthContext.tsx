@@ -12,15 +12,18 @@ export interface User {
 
 interface AuthContextType {
     user: User | null;
-    login: (email: string, password: string) => Promise<void>;
+    logOut: () => Promise<void>;
+    logIn: (email: string, password: string) => Promise<void>;
     register: (email: string, password: string) => Promise<void>;
     updateUser: (userData: Partial<User>) => Promise<void>;
+    isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider = ({children}: {children: React.ReactNode}) => {
     const [user, setUser] = useState<User | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         checkSession();
@@ -28,6 +31,8 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
 
     const checkSession = async () => {
       try {
+        setIsLoading(true);
+
         const { data: { session } } = await supabase.auth.getSession();
 
         if(session?.user) {
@@ -39,6 +44,8 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
       } catch (error) {
         console.error("Error checking session:", error);
         setUser(null);
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -80,7 +87,16 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
         }
     };
 
-    const login = async (email: string, password: string) => {
+    const logOut = async () => {
+      try {
+        await supabase.auth.signOut();
+        setUser(null);
+      } catch (error) {
+        console.error("Error signing out:", error);
+      }
+    }
+
+    const logIn = async (email: string, password: string) => {
       const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password
@@ -119,12 +135,20 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
         if(userData.profileImage !== undefined) userDataToUpdate.profile_image_url = userData.profileImage;
         if(userData.onboardingCompleted !== undefined) userDataToUpdate.onboarding_completed = userData.onboardingCompleted;
 
-        const { error } = await supabase
+        const { error, data } = await supabase
           .from("profiles")
           .update(userDataToUpdate)
           .eq("id", user.id)
+          .select()
+          .single();
        
         if(error) throw error;
+
+        if(data) {
+          const profile = await fetchUserProfile(data.id);
+          setUser(profile);
+        }
+
       } catch (error) {
         console.error("Error updating user profile:", error);
         throw error;
@@ -132,7 +156,7 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
     }
 
     return (
-        <AuthContext.Provider value={{user, login, register, updateUser}}>
+        <AuthContext.Provider value={{user, logOut, logIn, register, updateUser, isLoading}}>
             {children}
         </AuthContext.Provider>
     )
